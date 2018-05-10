@@ -1,6 +1,6 @@
 Django==1.8.9
 django-jsonfield==0.9.19
-djangorestframework==3.3.2
+
 psycopg2==2.6.1
 pyvmomi
 boto3
@@ -18,3 +18,6 @@ schema==0.6.6
 
 pycrypto
 google-api-python-client==1.4.1
+djangorestframework==3.3.2
+markdown=2.6.11
+django-filter=1.1.0

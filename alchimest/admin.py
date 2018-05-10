@@ -11,86 +11,81 @@ from alchimest.models import Affinity
 from alchimest.models import Volume
 from alchimest.models import Port
 from alchimest.models import Environment
+from alchimest.models import GitLikeModel
+from alchimest.controls import GitLikeModelControl
+from alchimest.controls import ImageControl
+from alchimest.controls import ComponentControl
+from alchimest.controls import PackageControl
+from rest_framework.exceptions import ValidationError
+from django.contrib import messages
 
+import logging
 
-class GitLikeModelAdmin(admin.ModelAdmin):
-    pass
+# LOG = logging.getLogger(__name__)
+# LOG.addHandler(logging.FileHandler('mylog.log'))
 
 
 class EmployeeInline(admin.StackedInline):
     model = Employee
     can_delete = False
-    verbose_name_plural = 'employee'
     filter_horizontal = ('own_namespaces',)
 
 
 class UserAdmin(UserAdmin):
-    inlines = (EmployeeInline, )
+    inlines = [
+        EmployeeInline,
+    ]
 
 
 class NamespaceAdmin(admin.ModelAdmin):
+    model = Namespace
 
     def get_queryset(self, request):
-        qs = Namespace.objects.none()
+
         if hasattr(request.user, 'employee'):
             return request.user.employee.own_namespaces
-        return qs
+        else:
+            return self.model.objects.none()
 
 
-class ComponentReleaseInline(admin.TabularInline):
-    model = ComponentRelease
-    extra = 0
+class GitLikeModelAdmin(admin.ModelAdmin):
+    search_fields = ['name']
+    list_display = ('name', 'tag', 'namespace', 'latest')
 
-
-class PackageAdmin(admin.ModelAdmin):
-    filter_horizontal = ('components',)
-    inlines = [
-        ComponentReleaseInline,
-    ]
-
-    def change_view(self, request, object_id, form_url='', extra_context=None):
-        extra_context = extra_context or {}
-        extra_context['show_save_and_add_another'] = False
-        extra_context['show_save_and_continue'] = False
-        return super(PackageAdmin, self).change_view(request, object_id,
-                                                     form_url, extra_context=extra_context)
-
-    def get_queryset(self, request):
-        qs = super(PackageAdmin, self).get_queryset(request)
-        return qs.filter(namespace__in=request.user.employee.own_namespaces.all())
-
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == 'namespace' and hasattr(request.user, 'employee'):
-            kwargs["queryset"] = Namespace.objects.filter(name__in=request.user.employee.own_namespaces.values_list('name'))
-        elif not hasattr(request.user, 'employee'):
-            kwargs["queryset"] = Namespace.objects.none()
-        return super(PackageAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+    model = GitLikeModel
+    control = GitLikeModelControl
 
     def save_model(self, request, obj, form, change):
         if change:
-            obj_orginal = self.model.objects.get(pk=obj.pk)
-            obj.changed_from = obj_orginal.commit_id
-            if obj_orginal.name == obj.name and obj_orginal.tag == obj.tag and obj_orginal.namespace == obj.namespace:
-                obj_orginal.latest = False
-                obj_orginal.save()
-            obj.pk = None
-            obj.save()
-            rels = ComponentRelease.objects.filter(in_package=obj_orginal)
-            for rel in rels:
-                ComponentRelease.objects.create(component=rel.component,
-                                                in_package=obj,
-                                                quantity=rel.quantity)
+            old_obj = self.model.objects.get(pk=obj.pk)
+            if old_obj.name != obj.name:
+                self.control.new(old_obj, obj)
+            elif old_obj.namespace != obj.namespace:
+                self.control.fork(old_obj, obj)
+            elif old_obj.tag != obj.tag:
+                self.control.commit(old_obj, obj)
+            else:
+                obj.save()
         else:
-            obj.save()
+            check_objs = self.model.objects.filter(name=obj.name, namespace=obj.namespace,
+                                                    tag=obj.tag)
+            if check_objs.count() == 0:
+                obj.save()
+            else:
+                messages.error(request, 'have same commit, this instance will not be saved, pls modify the old instance')
 
+    def get_queryset(self, request):
+        return self.model.objects.filter(namespace__in=request.user.employee.own_namespaces.all())
 
-class ImageAdmin(admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == 'namespace' and hasattr(request.user, 'employee'):
             kwargs["queryset"] = Namespace.objects.filter(name__in=request.user.employee.own_namespaces.values_list('name'))
-        elif not hasattr(request.user, 'employee'):
-            kwargs["queryset"] = Namespace.objects.none()
-        return super(ImageAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+        return super(GitLikeModelAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+class ImageAdmin(GitLikeModelAdmin):
+    model = Image
+    control = ImageControl
 
 
 class AffinityInline(admin.TabularInline):
@@ -117,7 +112,7 @@ class EnvironmentInline(admin.TabularInline):
     fk_name = "component"
 
 
-class ComponentAdmin(admin.ModelAdmin):
+class ComponentAdmin(GitLikeModelAdmin):
     inlines = [
         EnvironmentInline,
         VolumeInline,
@@ -125,45 +120,31 @@ class ComponentAdmin(admin.ModelAdmin):
         AffinityInline,
     ]
 
+    model = Component
+    control = ComponentControl
+
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == 'namespace' and hasattr(request.user, 'employee'):
-            kwargs["queryset"] = Namespace.objects.filter(
-                name__in=request.user.employee.own_namespaces.values_list('name'))
-        elif not hasattr(request.user, 'employee'):
-            kwargs["queryset"] = Namespace.objects.none()
+        if db_field.name == 'image' and hasattr(request.user, 'employee'):
+            kwargs["queryset"] = Image.objects.filter(namespace__name__in=request.user.employee.own_namespaces.values_list('name'))
         return super(ComponentAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
+
     def save_model(self, request, obj, form, change):
-        if change:
-            obj_orginal = self.model.objects.get(pk=obj.pk)
-            obj.changed_from = obj_orginal.commit_id
-            if obj_orginal.name == obj.name and obj_orginal.tag == obj.tag and obj_orginal.namespace == obj.namespace:
-                obj_orginal.latest = False
-                obj_orginal.save()
-            obj.pk = None
-            obj.save()
-            vols = Volume.objects.filter(component=obj_orginal)
-            for vol in vols:
-                vol.component = obj
-                vol.pk = None
-                vol.save()
-            envs = Environment.objects.filter(component=obj_orginal)
-            for env in envs:
-                env.component = obj
-                env.pk = None
-                env.save()
-            ports = Port.objects.filter(component=obj_orginal)
-            for port in ports:
-                port.component = obj
-                port.pk = None
-                port.save()
-            affs = Affinity.objects.filter(component=obj_orginal)
-            for aff in affs:
-                aff.component = obj
-                aff.pk = None
-                aff.save()
-        else:
-            obj.save()
+
+        super(ComponentAdmin, self).save_model(request, obj, form, change)
+
+
+class ComponentReleaseInline(admin.TabularInline):
+    model = ComponentRelease
+    extra = 0
+
+
+class PackageAdmin(GitLikeModelAdmin):
+    inlines = [
+        ComponentReleaseInline,
+    ]
+    model = Package
+    control = PackageControl
 
 
 # Register your models here.
@@ -171,5 +152,5 @@ admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 admin.site.register(Namespace, NamespaceAdmin)
 admin.site.register(Image, ImageAdmin)
-admin.site.register(Package, PackageAdmin)
 admin.site.register(Component, ComponentAdmin)
+admin.site.register(Package, PackageAdmin)

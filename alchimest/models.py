@@ -16,41 +16,52 @@ class Namespace(models.Model):
 
 class Employee(models.Model):
     user = models.OneToOneField(User)
+    JOB_TYPE = (
+        ('RD', 'Research and Development'),
+        ('OP', 'Operations'),
+        ('QA', 'Quality Assurance'),
+        ('PM', 'Product Manager'),
+        ('SE', 'Software Engineer'),
+    )
+    job = models.CharField(max_length=40, choices=JOB_TYPE)
     own_namespaces = models.ManyToManyField(Namespace)
 
     def __str__(self):
         return "{}".format(self.user)
 
 
-class Image(models.Model):
-    namespace = models.ForeignKey(Namespace)
-    name = models.CharField(max_length=256, blank=False, db_index=True)
-    version = models.CharField(max_length=128, blank=False)
-
-    class Meta:
-        unique_together = ('namespace', 'name', 'version')
-
-    def __str__(self):
-        return "{}:{}".format(self.name, self.version)
-
-
 class GitLikeModel(models.Model):
-    name = models.CharField(max_length=256, blank=False, db_index=True)
-    latest = models.BooleanField(default=True, editable=False)
     commit_id = models.UUIDField(primary_key=True, auto_created=True, default=uuid.uuid4, editable=False)
+    namespace = models.ForeignKey(Namespace, blank=False)
+    name = models.CharField(max_length=256, blank=False, db_index=True)
+    tag = models.CharField(max_length=50, blank=False, default="")
+    latest = models.BooleanField(default=True, editable=False)
     changed_from = models.UUIDField(default=None, null=True, blank=True, editable=False)
-    tag = models.CharField(max_length=50, blank=True, default="")
-    commit_time = models.DateTimeField(auto_now_add=True, blank=True)
 
     class Meta:
         abstract = True
 
     def __str__(self):
-        return "{}[{}]".format(self.name, self.tag)
+        str = "[{}]{}:{}".format(self.namespace, self.name, self.tag)
+        if self.latest:
+            str = '-*-NEW-*- ' + str
+        else:
+            str = '          ' + str
+        return str
+
+    def __unicode__(self):
+        return self.__str__()
+
+
+class Image(GitLikeModel):
+    registry = models.CharField(max_length=256, blank=False)
+    version = models.CharField(max_length=128, blank=False)
+
+    def release_detail(self):
+        return self.registry + ':' + self.version
 
 
 class Component(GitLikeModel):
-    namespace = models.ForeignKey(Namespace, blank=False)
     image = models.ForeignKey(Image, null=False)
     description = models.CharField(max_length=256, null=True,
                                    blank=True, default="")
@@ -129,12 +140,13 @@ class Affinity(models.Model):
 
 
 class Package(GitLikeModel):
-    namespace = models.ForeignKey(Namespace)
+
     components = models.ManyToManyField(Component,
                                         through='ComponentRelease',
                                         default=None)
     description = models.CharField(max_length=256, blank=True,
                                    null=True, default="")
+    approved = models.BooleanField(default=False)
 
 
 class ComponentRelease(models.Model):
@@ -145,4 +157,8 @@ class ComponentRelease(models.Model):
                                    related_name="in_package",
                                    null=False, default=None)
     quantity = models.IntegerField(default=1, blank=False)
-
+    description = models.CharField(max_length=256, blank=True,
+                                   null=True, default="")
+    examined = models.BooleanField(default=False)
+    def __str__(self):
+        return "{} in {}".format(self.component, self.in_package)
