@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 from rest_framework.views import APIView
-from alchimest.controls import PackageControl
-from alchimest.serializers import PackageSerializer
 from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.decorators import permission_classes
 from rest_framework.response import Response
-from alchimest.models import *
-from django.core import serializers
-import json
+
+from django.shortcuts import get_list_or_404
+
+from alchimest.controls import *
+from alchimest.serializers import *
 
 @api_view(['GET', 'POST'])
 @permission_classes((permissions.AllowAny,))
@@ -42,19 +42,13 @@ class PackageViewSet(viewsets.ModelViewSet):
 
 @api_view(['GET'])
 @permission_classes((permissions.AllowAny,))
-def release_detail(request, namespace, name, tag):
+def package_detail(request, namespace, name, tag):
     if request.method == 'GET':
-        package = Package.objects.filter(namespace__name=namespace,
-                                         name=name,
-                                         tag=tag,
-                                         approved=True).first()
+        package = get_list_or_404(Package, namespace__name=namespace,
+                                  name=name,
+                                  tag=tag,
+                                  approved=True)[0]
         return Response(data=PackageControl.release_detail(package))
-        # if package:
-        # try:
-        #     ≈
-        # except:
-        #     return Response(status=status.HTTP_400_BAD_REQUEST)
-        #
 
 
 

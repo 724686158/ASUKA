@@ -35,7 +35,16 @@ class UserAdmin(UserAdmin):
     inlines = [
         EmployeeInline,
     ]
+    list_display = ('username', 'email', 'last_login', 'is_staff', 'is_superuser', 'get_job')
 
+    def get_job(self, obj):
+        if obj.employee:
+            return obj.employee.job
+        else:
+            return 'without job'
+
+    get_job.allow_tags = True
+    get_job.short_description = 'JOB'
 
 class NamespaceAdmin(admin.ModelAdmin):
     model = Namespace
@@ -67,12 +76,7 @@ class GitLikeModelAdmin(admin.ModelAdmin):
             else:
                 obj.save()
         else:
-            check_objs = self.model.objects.filter(name=obj.name, namespace=obj.namespace,
-                                                    tag=obj.tag)
-            if check_objs.count() == 0:
-                obj.save()
-            else:
-                messages.error(request, 'have same commit, this instance will not be saved, pls modify the old instance')
+            obj.save()
 
     def get_queryset(self, request):
         return self.model.objects.filter(namespace__in=request.user.employee.own_namespaces.all())
@@ -140,6 +144,7 @@ class ComponentReleaseInline(admin.TabularInline):
 
 
 class PackageAdmin(GitLikeModelAdmin):
+    list_display = ('name', 'tag', 'namespace', 'latest', 'approved')
     inlines = [
         ComponentReleaseInline,
     ]
@@ -147,7 +152,6 @@ class PackageAdmin(GitLikeModelAdmin):
     control = PackageControl
 
 
-# Register your models here.
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 admin.site.register(Namespace, NamespaceAdmin)

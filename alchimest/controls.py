@@ -160,8 +160,10 @@ class ImageControl(GitLikeModelControl):
 
     @classmethod
     def release_detail(cls, obj):
-        return "{}:{}".format(obj.registry, obj.version)
-
+        if obj:
+            return "{}:{}".format(obj.registry, obj.version)
+        else:
+            return ""
 
 class ComponentControl(GitLikeModelControl):
     model_name = 'Component'
@@ -193,23 +195,25 @@ class ComponentControl(GitLikeModelControl):
 
     @classmethod
     def release_detail(cls, obj):
-        vols = Volume.objects.filter(component=obj)
-        envs = Environment.objects.filter(component=obj)
-        ports = Port.objects.filter(component=obj)
-        affs = Affinity.objects.filter(component=obj)
-        return {
-            'name': obj.name,
-            'tag': obj.tag,
-            'image': ImageControl.release_detail(obj.image),
-            'host_network': obj.host_network,
-            'mem_per_instance': obj.mem_per_instance,
-            'cpu_per_instance': obj.cpu_per_instance,
-            'environments': map(lambda x: EnvironmentControl.release_detail(x), envs),
-            'volumes': map(lambda x: VolumeControl.release_detail(x), vols),
-            'ports': map(lambda x: PortControl.release_detail(x), ports),
-            'affinitys': map(lambda x: AffinityControl.release_detail(x), affs),
-        }
-
+        if obj:
+            vols = Volume.objects.filter(component=obj)
+            envs = Environment.objects.filter(component=obj)
+            ports = Port.objects.filter(component=obj)
+            affs = Affinity.objects.filter(component=obj)
+            return {
+                'name': obj.name,
+                'tag': obj.tag,
+                'image': ImageControl.release_detail(obj.image),
+                'host_network': obj.host_network,
+                'mem_per_instance': obj.mem_per_instance,
+                'cpu_per_instance': obj.cpu_per_instance,
+                'environments': map(lambda x: EnvironmentControl.release_detail(x), envs),
+                'volumes': map(lambda x: VolumeControl.release_detail(x), vols),
+                'ports': map(lambda x: PortControl.release_detail(x), ports),
+                'affinitys': map(lambda x: AffinityControl.release_detail(x), affs),
+            }
+        else:
+            return {}
 
 class PackageControl(GitLikeModelControl):
     model_name = 'Package'
@@ -227,22 +231,24 @@ class PackageControl(GitLikeModelControl):
 
     @classmethod
     def release_detail(cls, obj):
-        comps = obj.components.all()
-        comps_data = []
-        for comp in comps:
-            cr = ComponentRelease.objects.filter(component=comp, in_package=obj).first()
-            comps_data.append({
-                'component': ComponentControl.release_detail(comp),
-                'quantity': cr.quantity,
-            })
-        return {
-            'namespace': obj.namespace.name,
-            'name': obj.name,
-            'tag': obj.tag,
-            'description': obj.description,
-            'compents': comps_data,
-        }
-
+        if obj:
+            comps = obj.components.all()
+            comps_data = []
+            for comp in comps:
+                cr = ComponentRelease.objects.filter(component=comp, in_package=obj).first()
+                comps_data.append({
+                    'component': ComponentControl.release_detail(comp),
+                    'quantity': cr.quantity,
+                })
+            return {
+                'namespace': obj.namespace.name,
+                'name': obj.name,
+                'tag': obj.tag,
+                'description': obj.description,
+                'compents': comps_data,
+            }
+        else:
+            return {}
 
 class VolumeControl(Control):
     model_name = 'Volume'
@@ -251,12 +257,15 @@ class VolumeControl(Control):
 
     @classmethod
     def release_detail(cls, obj):
-        return {
-            'pvc_name': obj.pvc_name,
-            'container_path': obj.container_path,
-            'mode': obj.mode,
-            'type': obj.type,
-        }
+        if obj:
+            return {
+                'pvc_name': obj.pvc_name,
+                'container_path': obj.container_path,
+                'mode': obj.mode,
+                'type': obj.type,
+            }
+        else:
+            return {}
 
 
 class PortControl(Control):
@@ -266,12 +275,14 @@ class PortControl(Control):
 
     @classmethod
     def release_detail(cls, obj):
-        return {
-            'name': obj.name,
-            'container_port': obj.container_port,
-            'protocol': obj.protocol,
-        }
-
+        if obj:
+            return {
+                'name': obj.name,
+                'container_port': obj.container_port,
+                'protocol': obj.protocol,
+            }
+        else:
+            return {}
 
 class EnvironmentControl(Control):
     model_name = 'Environment'
@@ -280,11 +291,14 @@ class EnvironmentControl(Control):
 
     @classmethod
     def release_detail(cls, obj):
-        return {
-            'name': obj.name,
-            'type': obj.type,
-            'value': obj.value,
-        }
+        if obj:
+            return {
+                'name': obj.name,
+                'type': obj.type,
+                'value': obj.value,
+            }
+        else:
+            return {}
 
 
 class AffinityControl(Control):
@@ -294,9 +308,11 @@ class AffinityControl(Control):
 
     @classmethod
     def release_detail(cls, obj):
-        return {
-            'type': obj.type,
-            'to_component': obj.to_component.name,
-        }
-
+        if obj:
+            return {
+                'type': obj.type,
+                'to_component': obj.to_component.name,
+            }
+        else:
+            return {}
 

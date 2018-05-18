@@ -40,6 +40,7 @@ class GitLikeModel(models.Model):
 
     class Meta:
         abstract = True
+        unique_together = (("name", "namespace", "tag"),)
 
     def __str__(self):
         str = "[{}]{}:{}".format(self.namespace, self.name, self.tag)
@@ -93,9 +94,9 @@ class Environment(models.Model):
     VALUE_TYPE = (
         ('STRING', 'string'),
         ('NOTSTR', 'notstring'),
-        ('UUEV', 'uuev'),
+        ('UUV', 'universallyUniqueVariable'),
     )
-    type = models.CharField(max_length=20, choices=VALUE_TYPE, default='STRING')
+    type = models.CharField(max_length=50, choices=VALUE_TYPE, default='STRING')
     value = models.CharField(max_length=256, default='')
 
 
