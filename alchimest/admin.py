@@ -12,17 +12,16 @@ from alchimest.models import Volume
 from alchimest.models import Port
 from alchimest.models import Environment
 from alchimest.models import GitLikeModel
+from alchimest.models import UniversallyUniqueVariable
+from alchimest.models import UniversallyUniqueVariableClaim
 from alchimest.controls import GitLikeModelControl
 from alchimest.controls import ImageControl
 from alchimest.controls import ComponentControl
 from alchimest.controls import PackageControl
+from alchimest.controls import UniversallyUniqueVariableClaimControl
+from alchimest.controls import UniversallyUniqueVariableControl
 from rest_framework.exceptions import ValidationError
 from django.contrib import messages
-
-import logging
-
-# LOG = logging.getLogger(__name__)
-# LOG.addHandler(logging.FileHandler('mylog.log'))
 
 
 class EmployeeInline(admin.StackedInline):
@@ -152,9 +151,21 @@ class PackageAdmin(GitLikeModelAdmin):
     control = PackageControl
 
 
+class UniversallyUniqueVariableClaimAdmin(admin.ModelAdmin):
+    model = UniversallyUniqueVariableClaim
+    control = UniversallyUniqueVariableClaimControl
+
+
+class UniversallyUniqueVariableAdmin(admin.ModelAdmin):
+    model = UniversallyUniqueVariable
+    control = UniversallyUniqueVariableControl
+
+
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 admin.site.register(Namespace, NamespaceAdmin)
 admin.site.register(Image, ImageAdmin)
 admin.site.register(Component, ComponentAdmin)
 admin.site.register(Package, PackageAdmin)
+admin.site.register(UniversallyUniqueVariableClaim, UniversallyUniqueVariableClaimAdmin)
+admin.site.register(UniversallyUniqueVariable, UniversallyUniqueVariableAdmin)

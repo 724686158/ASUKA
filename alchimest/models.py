@@ -40,15 +40,13 @@ class GitLikeModel(models.Model):
 
     class Meta:
         abstract = True
-        unique_together = (("name", "namespace", "tag"),)
+        unique_together = (("name", "namespace", "tag", ),)
 
     def __str__(self):
-        str = "[{}]{}:{}".format(self.namespace, self.name, self.tag)
         if self.latest:
-            str = '-*-NEW-*- ' + str
+            return "[{}]{}:{}".format(self.namespace, self.name, self.tag) + "[NEW]"
         else:
-            str = '          ' + str
-        return str
+            return "[{}]{}:{}".format(self.namespace, self.name, self.tag)
 
     def __unicode__(self):
         return self.__str__()
@@ -94,7 +92,6 @@ class Environment(models.Model):
     VALUE_TYPE = (
         ('STRING', 'string'),
         ('NOTSTR', 'notstring'),
-        ('UUV', 'universallyUniqueVariable'),
     )
     type = models.CharField(max_length=50, choices=VALUE_TYPE, default='STRING')
     value = models.CharField(max_length=256, default='')
@@ -110,6 +107,7 @@ class Volume(models.Model):
         ('Read&Write', 'rw'),
         ('ReadOnly', 'ro'),
     )
+    requests_storage_G = models.FloatField(default=1)
     mode = models.CharField(max_length=20, choices=MODE,
                             default='Read&Write')
     TYPE = (
@@ -161,5 +159,40 @@ class ComponentRelease(models.Model):
     description = models.CharField(max_length=256, blank=True,
                                    null=True, default="")
     examined = models.BooleanField(default=False)
+
     def __str__(self):
         return "{} in {}".format(self.component, self.in_package)
+
+
+class UniversallyUniqueVariableClaim(models.Model):
+    id = models.UUIDField(primary_key=True, auto_created=True, default=uuid.uuid4, editable=False)
+    key = models.CharField(max_length=512, blank=False, db_index=True)
+    description = models.CharField(max_length=512, blank=False)
+    VALUE_TYPE = (
+        ('STRING', 'string'),
+        ('NOTSTR', 'notstring'),
+    )
+    value_type = models.CharField(max_length=50, choices=VALUE_TYPE, default='STRING')
+    VALUE_ORIGIN = (
+        ('PACKAGE', 'package'),
+        ('COMPONENT', 'component'),
+        ('REGION', 'region'),
+        ('SERVICE', 'service'),
+    )
+    value_origin = models.CharField(max_length=50, choices=VALUE_ORIGIN, default='STRING')
+
+    class Meta:
+        unique_together = (("key",),)
+
+    def __str__(self):
+        return self.key
+
+
+class UniversallyUniqueVariable(models.Model):
+    claim = models.ForeignKey(UniversallyUniqueVariableClaim)
+    value = models.CharField(max_length=512, blank=False)
+
+    def __str__(self):
+        return "{}={}".format(self.claim, self.value)
+
+

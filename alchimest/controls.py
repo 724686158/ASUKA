@@ -1,30 +1,10 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import get_object_or_404
 from alchimest.serializers import validate_and_save
-from alchimest.models import GitLikeModel
-from alchimest.models import Image
-from alchimest.models import Component
-from alchimest.models import Package
-from alchimest.models import Volume
-from alchimest.models import Environment
-from alchimest.models import Port
-from alchimest.models import Affinity
-from alchimest.models import ComponentRelease
 from alchimest.utils import copy_model_instance
-from alchimest.serializers import GitLikeModelSerializer
-from alchimest.serializers import ImageSerializer
-from alchimest.serializers import ComponentSerializer
-from alchimest.serializers import PackageSerializer
-from alchimest.serializers import VolumeSerializer
-from alchimest.serializers import PortSerializer
-from alchimest.serializers import EnvironmentSerializer
-from alchimest.serializers import AffinitySerializer
+from alchimest.models import *
+from alchimest.serializers import *
 
-import logging
-import traceback
-
-# LOG = logging.getLogger(__name__)
-# LOG.addHandler(logging.FileHandler('mylog2.log'))
 
 class Control(object):
     model_name = None
@@ -250,6 +230,7 @@ class PackageControl(GitLikeModelControl):
         else:
             return {}
 
+
 class VolumeControl(Control):
     model_name = 'Volume'
     model = Volume
@@ -263,6 +244,7 @@ class VolumeControl(Control):
                 'container_path': obj.container_path,
                 'mode': obj.mode,
                 'type': obj.type,
+                'requests_storage_G' : obj.requests_storage_G,
             }
         else:
             return {}
@@ -316,3 +298,14 @@ class AffinityControl(Control):
         else:
             return {}
 
+
+class UniversallyUniqueVariableControl(Control):
+    model_name = 'UniversallyUniqueVariable'
+    model = UniversallyUniqueVariable
+    serializer = UniversallyUniqueVariableSerializer
+
+
+class UniversallyUniqueVariableClaimControl(Control):
+    model_name = 'UniversallyUniqueVariableClaim'
+    model = UniversallyUniqueVariableClaim
+    serializer = UniversallyUniqueVariableClaimSerializer

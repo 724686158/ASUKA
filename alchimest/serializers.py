@@ -11,6 +11,8 @@ from alchimest.models import Environment
 from alchimest.models import Affinity
 from alchimest.models import Employee
 from alchimest.models import GitLikeModel
+from alchimest.models import UniversallyUniqueVariableClaim
+from alchimest.models import UniversallyUniqueVariable
 
 
 class NamespaceSerializer(serializers.ModelSerializer):
@@ -61,6 +63,16 @@ class EmployeeSerializer(serializers.ModelSerializer):
 class GitLikeModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = GitLikeModel
+
+
+class UniversallyUniqueVariableClaimSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UniversallyUniqueVariableClaim
+
+
+class UniversallyUniqueVariableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UniversallyUniqueVariable
 
 
 def validate_and_save(serializer):
