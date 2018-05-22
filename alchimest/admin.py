@@ -59,11 +59,10 @@ class NamespaceAdmin(admin.ModelAdmin):
 
 
 class GitLikeModelAdmin(admin.ModelAdmin):
-    search_fields = ['name']
-    list_display = ('name', 'tag', 'namespace', 'latest')
-
     model = GitLikeModel
     control = GitLikeModelControl
+
+    search_fields = ['name']
 
     def save_model(self, request, obj, form, change):
         if change:
@@ -91,6 +90,12 @@ class GitLikeModelAdmin(admin.ModelAdmin):
 class ImageAdmin(GitLikeModelAdmin):
     model = Image
     control = ImageControl
+    list_display = ('name', 'tag', 'namespace', 'latest', 'glm_tree')
+
+    def glm_tree(self, obj):
+        return "<a href='/alchimest/glm_tree/image/{}'>{}</a>".format(obj.name, 'glm_tree')
+    glm_tree.allow_tags = True
+    glm_tree.short_description = 'SHOW_IN_TREE'
 
 
 class AffinityInline(admin.TabularInline):
@@ -135,6 +140,13 @@ class ComponentAdmin(GitLikeModelAdmin):
     model = Component
     control = ComponentControl
 
+    list_display = ('name', 'tag', 'namespace', 'latest', 'glm_tree')
+
+    def glm_tree(self, obj):
+        return "<a href='/alchimest/glm_tree/component/{}'>{}</a>".format(obj.name, 'glm_tree')
+    glm_tree.allow_tags = True
+    glm_tree.short_description = 'SHOW_IN_TREE'
+
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == 'image' and hasattr(request.user, 'employee'):
             kwargs["queryset"] = Image.objects.filter(namespace__name__in=request.user.employee.own_namespaces.values_list('name'))
@@ -155,7 +167,6 @@ class UniversallyUniqueVariableInPackageInline(admin.TabularInline):
 
 
 class PackageAdmin(GitLikeModelAdmin):
-    list_display = ('name', 'tag', 'namespace', 'latest', 'approved')
     inlines = [
         ComponentReleaseInline,
         UniversallyUniqueVariableInPackageInline,
@@ -163,6 +174,13 @@ class PackageAdmin(GitLikeModelAdmin):
     ]
     model = Package
     control = PackageControl
+
+    list_display = ('name', 'tag', 'namespace', 'latest', 'approved', 'glm_tree')
+
+    def glm_tree(self, obj):
+        return "<a href='/alchimest/glm_tree/package/{}'>{}</a>".format(obj.name, 'glm_tree')
+    glm_tree.allow_tags = True
+    glm_tree.short_description = 'SHOW_IN_TREE'
 
 
 class UniversallyUniqueVariableAdmin(admin.ModelAdmin):

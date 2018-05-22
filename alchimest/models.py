@@ -69,7 +69,7 @@ class UniversallyUniqueVariable(models.Model):
     )
     value_type = models.CharField(max_length=50, choices=VALUE_TYPE, default='STRING')
     VALUE_ORIGIN = (
-        ('Current', 'current'),
+        ('CURRENT', 'current'),
         ('REGION', 'region'),
         ('SERVICE', 'service'),
         ('CALCULATION', 'calculation'),
@@ -95,7 +95,6 @@ class Component(GitLikeModel):
     use_uuvs = models.ManyToManyField(UniversallyUniqueVariable,
                                      through='UniversallyUniqueVariableInComponent',
                                      default=None)
-
 
 
 class Port(models.Model):

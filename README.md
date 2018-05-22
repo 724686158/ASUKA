@@ -30,3 +30,7 @@ Project Onwer：孟子成
 ## 参考开源项目
 
 ### 树状图绘制：https://github.com/panhc/d3js-tree-example
+
+
+## 鸣谢
+王赫（软件工程15级， 帮我调通了前端的路由和静态资源加载）

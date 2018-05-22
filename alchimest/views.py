@@ -7,7 +7,10 @@ from rest_framework.decorators import api_view
 from rest_framework.decorators import permission_classes
 from rest_framework.response import Response
 
+from django.shortcuts import render
 from django.shortcuts import get_list_or_404
+
+from django.http import JsonResponse
 
 from alchimest.controls import *
 from alchimest.serializers import *
@@ -51,5 +54,25 @@ def package_detail(request, namespace, name, tag):
         return Response(data=PackageControl.release_detail(package))
 
 
+@permission_classes((permissions.AllowAny,))
+def glm_tree(request, type, name):
+    return render(request, 'glm_tree/tree.html', {
+        'type': type,
+        'name': name,
+    })
 
+
+@permission_classes((permissions.AllowAny,))
+def glm_tree_data(request, type, name):
+    if type == 'package':
+        obj = get_list_or_404(Package, name=name, latest=True)[0]
+        return JsonResponse(PackageControl.get_tree_data(obj), safe=False)
+    elif type == 'component':
+        obj = get_list_or_404(Component, name=name, latest=True)[0]
+        return JsonResponse(ComponentControl.get_tree_data(obj), safe=False)
+    elif type == 'image':
+        obj = get_list_or_404(Image, name=name, latest=True)[0]
+        return JsonResponse(ComponentControl.get_tree_data(obj), safe=False)
+    else:
+        return JsonResponse({}, safe=False)
 

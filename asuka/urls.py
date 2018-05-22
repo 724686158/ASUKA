@@ -12,4 +12,5 @@ urlpatterns = [
     url(r'^furion/', include('furion.urls')),
     url(r'^coil/', include('coil.urls')),
     url(r'^phoenix/', include('phoenix.urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) \
+  + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

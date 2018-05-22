@@ -14,4 +14,7 @@ urlpatterns = [
     url(r'^package_list/$', views.package_list),
     url(r'^package_detail/(?P<namespace>[a-zA-Z0-9]*)/(?P<name>[a-zA-Z0-9]*)/(?P<tag>[a-zA-Z0-9]*)/$'.format(),
         views.package_detail),
+    url(r'^glm_tree/(?P<type>[a-zA-Z0-9]*)/(?P<name>[a-zA-Z0-9]*)/$', views.glm_tree),
+    # url(r'^api/play_count_by_month', views.play_count_by_month, name='play_count_by_month'),
+    url(r'^get_glm_tree_data/(?P<type>[a-zA-Z0-9]*)/(?P<name>[a-zA-Z0-9]*)/$', views.glm_tree_data, name='get_tree_data')
 ]

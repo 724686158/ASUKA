@@ -126,6 +126,26 @@ class GitLikeModelControl(Control):
         cls.copy_normal_object(old_obj, now_obj)
         cls.copy_glm_object(old_obj, now_obj)
 
+    @classmethod
+    def get_tree_data(cls, obj):
+        while obj.changed_from:
+            obj = get_object_or_404(cls.model, commit_id=obj.changed_from)
+        return {
+            "name": str(obj),
+            "children": cls.get_son_objs_data(obj)
+        }
+
+    @classmethod
+    def get_son_objs_data(cls, obj):
+        son_objs = cls.model.objects.filter(changed_from=obj.commit_id)
+        data = []
+        if len(son_objs) > 0:
+            for son_obj in son_objs:
+                data.append({
+                    "name": str(son_obj),
+                    "children": cls.get_son_objs_data(son_obj)
+                })
+        return data
 
 class ImageControl(GitLikeModelControl):
     model_name = 'Image'
