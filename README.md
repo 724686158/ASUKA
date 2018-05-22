@@ -1,26 +1,32 @@
+项目名称：ASUKA
+
 地址：山东科技大学
 
 指导老师：倪维健
 
 Project Onwer：孟子成
 
-# ASUKA
-面向kubernetes集群的配置管理系统
 
 
-#主要功能模块
+## 概述
+面向容器化微服务框架的配置管理系统
 
-## alchimest
-存储各组件Resource（包含Version， Environment Var， if DaemonSet， if Host, PV&PVC, Secret）。
-存储应用（组件的集合）与组件的一对多关系。
 
-## furion
-存储Region Data。
-存储应用对Region Data的依赖。
+## 主要功能模块
 
-## coil
-从中心实例组发送数据副本给私有区内的衍生实例。
-验证衍生实例内数据副本的版本，是否受到污染。
+### alchimest
+镜像（IMAGE），组件（COMPONENT），软件包（PACKAGE）的配置管理。
 
-## phoenix
-面向kubernetes API的yaml渲染。
+### furion
+集群（REGION），服务（SERVICE），环境（ENVIRONMENT）的配置管理。
+
+### coil
+记录alchimest和furion的地址，将软件包和环境相连（Link，或称“发版”），记录发版行为，并提供结果的下载。
+
+### phoenix
+根据发版的结果，导出kubernetes的yaml。（尚未完成）
+
+
+## 参考开源项目
+
+### 树状图绘制：https://github.com/panhc/d3js-tree-example

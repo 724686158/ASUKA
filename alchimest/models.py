@@ -60,6 +60,31 @@ class Image(GitLikeModel):
         return self.registry + ':' + self.version
 
 
+class UniversallyUniqueVariable(models.Model):
+    id = models.UUIDField(primary_key=True, auto_created=True, default=uuid.uuid4, editable=False)
+    key = models.CharField(max_length=512, blank=False, db_index=True)
+    VALUE_TYPE = (
+        ('STRING', 'string'),
+        ('NOTSTR', 'notstring'),
+    )
+    value_type = models.CharField(max_length=50, choices=VALUE_TYPE, default='STRING')
+    VALUE_ORIGIN = (
+        ('Current', 'current'),
+        ('REGION', 'region'),
+        ('SERVICE', 'service'),
+        ('CALCULATION', 'calculation'),
+    )
+    value_origin = models.CharField(max_length=50, choices=VALUE_ORIGIN, default='STRING')
+    description = models.CharField(max_length=512, blank=False)
+    value = models.CharField(max_length=512, blank=False)
+
+    class Meta:
+        unique_together = (("key", ),)
+
+    def __str__(self):
+        return "{}={}".format(self.key, self.value)
+
+
 class Component(GitLikeModel):
     image = models.ForeignKey(Image, null=False)
     description = models.CharField(max_length=256, null=True,
@@ -67,6 +92,10 @@ class Component(GitLikeModel):
     host_network = models.BooleanField(default=False)
     mem_per_instance = models.FloatField(default=128)
     cpu_per_instance = models.FloatField(default=0.125)
+    use_uuvs = models.ManyToManyField(UniversallyUniqueVariable,
+                                     through='UniversallyUniqueVariableInComponent',
+                                     default=None)
+
 
 
 class Port(models.Model):
@@ -140,12 +169,15 @@ class Affinity(models.Model):
 
 class Package(GitLikeModel):
 
-    components = models.ManyToManyField(Component,
-                                        through='ComponentRelease',
-                                        default=None)
     description = models.CharField(max_length=256, blank=True,
                                    null=True, default="")
     approved = models.BooleanField(default=False)
+    components = models.ManyToManyField(Component,
+                                        through='ComponentRelease',
+                                        default=None)
+    use_uuvs = models.ManyToManyField(UniversallyUniqueVariable,
+                                     through='UniversallyUniqueVariableInPackage',
+                                     default=None)
 
 
 class ComponentRelease(models.Model):
@@ -164,35 +196,20 @@ class ComponentRelease(models.Model):
         return "{} in {}".format(self.component, self.in_package)
 
 
-class UniversallyUniqueVariableClaim(models.Model):
-    id = models.UUIDField(primary_key=True, auto_created=True, default=uuid.uuid4, editable=False)
-    key = models.CharField(max_length=512, blank=False, db_index=True)
-    description = models.CharField(max_length=512, blank=False)
-    VALUE_TYPE = (
-        ('STRING', 'string'),
-        ('NOTSTR', 'notstring'),
-    )
-    value_type = models.CharField(max_length=50, choices=VALUE_TYPE, default='STRING')
-    VALUE_ORIGIN = (
-        ('PACKAGE', 'package'),
-        ('COMPONENT', 'component'),
-        ('REGION', 'region'),
-        ('SERVICE', 'service'),
-    )
-    value_origin = models.CharField(max_length=50, choices=VALUE_ORIGIN, default='STRING')
-
-    class Meta:
-        unique_together = (("key",),)
-
-    def __str__(self):
-        return self.key
+class UniversallyUniqueVariableInPackage(models.Model):
+    uuv = models.ForeignKey(UniversallyUniqueVariable,
+                                  related_name="use_this_uuv_in_package",
+                                  null=False, default=None)
+    in_package = models.ForeignKey(Package,
+                                   related_name="uuv_in_this_package",
+                                   null=False, default=None)
 
 
-class UniversallyUniqueVariable(models.Model):
-    claim = models.ForeignKey(UniversallyUniqueVariableClaim)
-    value = models.CharField(max_length=512, blank=False)
-
-    def __str__(self):
-        return "{}={}".format(self.claim, self.value)
-
+class UniversallyUniqueVariableInComponent(models.Model):
+    uuv = models.ForeignKey(UniversallyUniqueVariable,
+                                  related_name="use_this_uuv_in_component",
+                                  null=False, default=None)
+    in_component = models.ForeignKey(Component,
+                                   related_name="uuv_in_this_component",
+                                   null=False, default=None)
 

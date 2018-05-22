@@ -82,12 +82,6 @@ class Control(object):
         return data
 
 
-class PackageControl(Control):
-    model_name = 'Package'
-    model = Package
-    serializer = PackageSerializer
-
-
 class GitLikeModelControl(Control):
     model_name = 'GitLikeModel'
     model = GitLikeModel
@@ -145,6 +139,7 @@ class ImageControl(GitLikeModelControl):
         else:
             return ""
 
+
 class ComponentControl(GitLikeModelControl):
     model_name = 'Component'
     model = Component
@@ -172,6 +167,12 @@ class ComponentControl(GitLikeModelControl):
             aff.component = now_obj
             aff.pk = None
             aff.save()
+        uuvs = UniversallyUniqueVariableInComponent.objects.filter(in_component=old_obj)
+        for uuv in uuvs:
+            uuv.in_component = now_obj
+            uuv.pk = None
+            uuv.save()
+
 
     @classmethod
     def release_detail(cls, obj):
@@ -180,6 +181,10 @@ class ComponentControl(GitLikeModelControl):
             envs = Environment.objects.filter(component=obj)
             ports = Port.objects.filter(component=obj)
             affs = Affinity.objects.filter(component=obj)
+            uuvs_component = UniversallyUniqueVariableInComponent.objects.filter(in_component=obj)
+            uuvs_data = []
+            for uuv_component in uuvs_component:
+                uuvs_data.append(UniversallyUniqueVariableControl.release_detail(uuv_component.uuv))
             return {
                 'name': obj.name,
                 'tag': obj.tag,
@@ -191,9 +196,11 @@ class ComponentControl(GitLikeModelControl):
                 'volumes': map(lambda x: VolumeControl.release_detail(x), vols),
                 'ports': map(lambda x: PortControl.release_detail(x), ports),
                 'affinitys': map(lambda x: AffinityControl.release_detail(x), affs),
+                'uuvs': uuvs_data,
             }
         else:
             return {}
+
 
 class PackageControl(GitLikeModelControl):
     model_name = 'Package'
@@ -210,6 +217,14 @@ class PackageControl(GitLikeModelControl):
                                             examined = False)
 
     @classmethod
+    def copy_normal_object(cls, old_obj, now_obj):
+        uuvs = UniversallyUniqueVariableInPackage.objects.filter(in_package=old_obj)
+        for uuv in uuvs:
+            uuv.in_package = now_obj
+            uuv.pk = None
+            uuv.save()
+
+    @classmethod
     def release_detail(cls, obj):
         if obj:
             comps = obj.components.all()
@@ -220,12 +235,17 @@ class PackageControl(GitLikeModelControl):
                     'component': ComponentControl.release_detail(comp),
                     'quantity': cr.quantity,
                 })
+            uuvs_package = UniversallyUniqueVariableInPackage.objects.filter(in_package=obj)
+            uuvs_data = []
+            for uuv_package in uuvs_package:
+                uuvs_data.append(UniversallyUniqueVariableControl.release_detail(uuv_package.uuv))
             return {
                 'namespace': obj.namespace.name,
                 'name': obj.name,
                 'tag': obj.tag,
                 'description': obj.description,
                 'compents': comps_data,
+                'uuvs': uuvs_data,
             }
         else:
             return {}
@@ -304,8 +324,23 @@ class UniversallyUniqueVariableControl(Control):
     model = UniversallyUniqueVariable
     serializer = UniversallyUniqueVariableSerializer
 
+    @classmethod
+    def release_detail(cls, obj):
+        return {
+            'key': obj.key,
+            'value_type': obj.value_type,
+            'value_origin': obj.value_origin,
+            'value': obj.value,
+        }
 
-class UniversallyUniqueVariableClaimControl(Control):
-    model_name = 'UniversallyUniqueVariableClaim'
-    model = UniversallyUniqueVariableClaim
-    serializer = UniversallyUniqueVariableClaimSerializer
+
+class UniversallyUniqueVariableInPackageControl(Control):
+    model_name = 'UniversallyUniqueVariableInPackage'
+    model = UniversallyUniqueVariableInPackage
+    serializer = UniversallyUniqueVariableInPackage
+
+
+class UniversallyUniqueVariableInComponentControl(Control):
+    model_name = 'UniversallyUniqueVariableInComponent'
+    model = UniversallyUniqueVariableInComponent
+    serializer = UniversallyUniqueVariableInComponent

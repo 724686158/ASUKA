@@ -13,13 +13,14 @@ from alchimest.models import Port
 from alchimest.models import Environment
 from alchimest.models import GitLikeModel
 from alchimest.models import UniversallyUniqueVariable
-from alchimest.models import UniversallyUniqueVariableClaim
+from alchimest.models import UniversallyUniqueVariableInPackage
+from alchimest.models import UniversallyUniqueVariableInComponent
 from alchimest.controls import GitLikeModelControl
 from alchimest.controls import ImageControl
 from alchimest.controls import ComponentControl
 from alchimest.controls import PackageControl
-from alchimest.controls import UniversallyUniqueVariableClaimControl
 from alchimest.controls import UniversallyUniqueVariableControl
+from alchimest.controls import UniversallyUniqueVariableInPackageControl
 from rest_framework.exceptions import ValidationError
 from django.contrib import messages
 
@@ -44,6 +45,7 @@ class UserAdmin(UserAdmin):
 
     get_job.allow_tags = True
     get_job.short_description = 'JOB'
+
 
 class NamespaceAdmin(admin.ModelAdmin):
     model = Namespace
@@ -115,12 +117,19 @@ class EnvironmentInline(admin.TabularInline):
     fk_name = "component"
 
 
+class UniversallyUniqueVariableInComponentInline(admin.TabularInline):
+    model = UniversallyUniqueVariableInComponent
+    extra = 0
+
+
 class ComponentAdmin(GitLikeModelAdmin):
     inlines = [
         EnvironmentInline,
         VolumeInline,
         PortInline,
         AffinityInline,
+        UniversallyUniqueVariableInComponentInline,
+        # UniversallyUniqueVariableInline,
     ]
 
     model = Component
@@ -131,9 +140,7 @@ class ComponentAdmin(GitLikeModelAdmin):
             kwargs["queryset"] = Image.objects.filter(namespace__name__in=request.user.employee.own_namespaces.values_list('name'))
         return super(ComponentAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
-
     def save_model(self, request, obj, form, change):
-
         super(ComponentAdmin, self).save_model(request, obj, form, change)
 
 
@@ -142,23 +149,30 @@ class ComponentReleaseInline(admin.TabularInline):
     extra = 0
 
 
+class UniversallyUniqueVariableInPackageInline(admin.TabularInline):
+    model = UniversallyUniqueVariableInPackage
+    extra = 0
+
+
 class PackageAdmin(GitLikeModelAdmin):
     list_display = ('name', 'tag', 'namespace', 'latest', 'approved')
     inlines = [
         ComponentReleaseInline,
+        UniversallyUniqueVariableInPackageInline,
+        # UniversallyUniqueVariableInline,
     ]
     model = Package
     control = PackageControl
 
 
-class UniversallyUniqueVariableClaimAdmin(admin.ModelAdmin):
-    model = UniversallyUniqueVariableClaim
-    control = UniversallyUniqueVariableClaimControl
-
-
 class UniversallyUniqueVariableAdmin(admin.ModelAdmin):
     model = UniversallyUniqueVariable
     control = UniversallyUniqueVariableControl
+
+#
+# class UniversallyUniqueVariableInPackageAdmin(admin.ModelAdmin):
+#     model = UniversallyUniqueVariableInPackage
+#     control = UniversallyUniqueVariableInPackageControl
 
 
 admin.site.unregister(User)
@@ -167,5 +181,4 @@ admin.site.register(Namespace, NamespaceAdmin)
 admin.site.register(Image, ImageAdmin)
 admin.site.register(Component, ComponentAdmin)
 admin.site.register(Package, PackageAdmin)
-admin.site.register(UniversallyUniqueVariableClaim, UniversallyUniqueVariableClaimAdmin)
 admin.site.register(UniversallyUniqueVariable, UniversallyUniqueVariableAdmin)
