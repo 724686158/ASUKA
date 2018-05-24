@@ -42,7 +42,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'alchimest',
     'furion',
-    'phoenix',
+    # 'phoenix',
     'coil',
     'storages',
 )

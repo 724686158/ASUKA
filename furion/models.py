@@ -1,6 +1,5 @@
 from django.db import models
 from furion.utils import AESCipher
-import uuid
 
 
 class Service(models.Model):
@@ -32,7 +31,7 @@ class Variable(models.Model):
     VALUE_TYPE = (
         ('STRING', 'string'),
         ('NOTSTR', 'notstring'),
-        ('UUV', 'universallyUniqueVariable'),
+        # ('UUV', 'universallyUniqueVariable'),
     )
     type = models.CharField(max_length=50, choices=VALUE_TYPE, default='STRING')
     value = models.CharField(max_length=256, default='')
@@ -62,12 +61,8 @@ class Environment(models.Model):
 
 
 class PartnerVariable(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    key = models.CharField(max_length=512, blank=False, db_index=True)
-    description = models.CharField(max_length=512, blank=False)
-
-    class Meta:
-        unique_together = (("key", ),)
+    key = models.CharField(max_length=512, primary_key=True)
+    description = models.CharField(max_length=512, blank=True, null=True, default="")
 
     def __str__(self):
         return "{}".format(self.key)

@@ -70,19 +70,18 @@ class UniversallyUniqueVariable(models.Model):
     value_type = models.CharField(max_length=50, choices=VALUE_TYPE, default='STRING')
     VALUE_ORIGIN = (
         ('CURRENT', 'current'),
-        ('REGION', 'region'),
-        ('SERVICE', 'service'),
+        ('ENVIRONMENT', 'environment'),
         ('CALCULATION', 'calculation'),
     )
     value_origin = models.CharField(max_length=50, choices=VALUE_ORIGIN, default='STRING')
-    description = models.CharField(max_length=512, blank=False)
-    value = models.CharField(max_length=512, blank=False)
+    description = models.CharField(max_length=512, blank=True, null=True, default="")
+    value = models.CharField(max_length=512, blank=True, null=True, default="")
 
     class Meta:
         unique_together = (("key", ),)
 
     def __str__(self):
-        return "{}={}".format(self.key, self.value)
+        return self.key
 
 
 class Component(GitLikeModel):

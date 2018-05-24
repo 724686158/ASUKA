@@ -55,7 +55,7 @@ class EnvironmentAdmin(admin.ModelAdmin):
 class PartnerVariableAdmin(admin.ModelAdmin):
     model = PartnerVariable
     control = PartnerVariableControl
-    list_display = ('id', 'key', 'description')
+    list_display = ('key', 'description')
 
 
 admin.site.register(Region, RegionAdmin)

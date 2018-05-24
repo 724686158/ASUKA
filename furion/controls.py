@@ -195,7 +195,8 @@ class PartnerVariableInEnvironmentControl(Control):
     def release_detail(cls, obj):
         if obj and obj.checked:
             return {
-                obj.partner_variable.key: obj.value
+                "key": obj.partner_variable.key,
+                "value": obj.value
             }
         else:
             return {}

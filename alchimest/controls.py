@@ -309,6 +309,7 @@ class PortControl(Control):
         else:
             return {}
 
+
 class EnvironmentControl(Control):
     model_name = 'Environment'
     model = Environment
@@ -350,7 +351,9 @@ class UniversallyUniqueVariableControl(Control):
     @classmethod
     def release_detail(cls, obj):
         return {
+            'id': obj.id,
             'key': obj.key,
+            'description': obj.description,
             'value_type': obj.value_type,
             'value_origin': obj.value_origin,
             'value': obj.value,

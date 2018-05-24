@@ -74,7 +74,7 @@ def glm_tree_data(request, type, name):
         return JsonResponse(ComponentControl.get_tree_data(obj), safe=False)
     elif type == 'image':
         obj = get_list_or_404(Image, name=name, latest=True)[0]
-        return JsonResponse(ComponentControl.get_tree_data(obj), safe=False)
+        return JsonResponse(ImageControl.get_tree_data(obj), safe=False)
     else:
         return JsonResponse({}, safe=False)
 

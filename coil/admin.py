@@ -37,7 +37,7 @@ class DeploymentRecordAdmin(admin.ModelAdmin):
     download_result.short_description = 'Download Result'
 
     def save_model(self, request, obj, form, change):
-        self.control.link_and_create_histoy(obj)
+        self.control.create_deployment_record_and_get_result(obj)
 
 
 admin.site.register(AlchimestHook, AlchimestHookAdmin)

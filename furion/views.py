@@ -23,10 +23,13 @@ class EnvironmentViewSet(viewsets.ModelViewSet):
     serializer_class = EnvironmentSerializer
 
 
+@permission_classes((permissions.AllowAny,))
 class PartnerVariableViewSet(viewsets.ModelViewSet):
     queryset = PartnerVariable.objects.all()
     serializer_class = PartnerVariableSerializer
 
+
+@permission_classes((permissions.AllowAny,))
 class PartnerVariableInEnvironmentViewSet(viewsets.ModelViewSet):
     queryset = PartnerVariableInEnvironment.objects.all()
     serializer_class = PartnerVariableInEnvironmentSerializer
