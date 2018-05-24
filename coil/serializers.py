@@ -14,9 +14,9 @@ class AlchimestHookSerializer(serializers.ModelSerializer):
         model = AlchimestHook
 
 
-class HistorySerializer(serializers.ModelSerializer):
+class DeploymentRecordSerializer(serializers.ModelSerializer):
     class Meta:
-        model = History
+        model = DeploymentRecord
 
 
 def validate_and_save(serializer):

@@ -15,6 +15,8 @@ from django.http import JsonResponse
 from alchimest.controls import *
 from alchimest.serializers import *
 
+import os
+
 @api_view(['GET', 'POST'])
 @permission_classes((permissions.AllowAny,))
 def package_list(request):
@@ -39,7 +41,7 @@ class ReleasesView(APIView):
 
 
 class PackageViewSet(viewsets.ModelViewSet):
-    queryset = Package.objects.all().order_by('commit_time')
+    queryset = Package.objects.all()
     serializer_class = PackageSerializer
 
 
@@ -75,4 +77,27 @@ def glm_tree_data(request, type, name):
         return JsonResponse(ComponentControl.get_tree_data(obj), safe=False)
     else:
         return JsonResponse({}, safe=False)
+
+
+@permission_classes((permissions.AllowAny,))
+def dump_data(request, id):
+    try:
+        replica = get_object_or_404(Replica, id=id)
+        ReplicaControl.dump_data(replica)
+        return JsonResponse({'dump alchimest data': 'success'}, safe=False)
+    except:
+        return JsonResponse({'dump alchimest data': 'fail'}, safe=False)
+
+
+@permission_classes((permissions.AllowAny,))
+def load_data(request, id):
+    try:
+        replica = get_object_or_404(Replica, id=id)
+        ReplicaControl.load_data(replica)
+        return JsonResponse({'load alchimest data': 'success'}, safe=False)
+    except:
+        return JsonResponse({'load alchimest data': 'fail'}, safe=False)
+
+
+
 

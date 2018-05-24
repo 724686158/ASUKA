@@ -5,6 +5,8 @@ from django.http import HttpResponse
 
 router = routers.DefaultRouter()
 router.register(r'environment', views.EnvironmentViewSet)
+router.register(r'partner_variable', views.PartnerVariableViewSet)
+router.register(r'partner_variable_in_environment', views.PartnerVariableInEnvironmentViewSet)
 
 
 urlpatterns = [

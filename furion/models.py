@@ -1,33 +1,6 @@
 from django.db import models
 from furion.utils import AESCipher
-
-# class UuevProducer(UniversallyUniqueVariable):
-#     VALUE_TYPE = (
-#         ('STRING', 'string'),
-#         ('NOTSTR', 'notstring'),
-#     )
-#     is_secret = models.BooleanField(default=False)
-#     type = models.CharField(max_length=20, choices=VALUE_TYPE, default='STRING')
-#     value = models.CharField(max_length=512)
-#
-#     def set_secret_value(self, secret_value):
-#         aes = AESCipher(self.name)
-#         self.value = aes.encrypt(secret_value)
-#
-#     def get_secret_value(self):
-#         aes = AESCipher(self.name)
-#         return aes.decrypt(self.value)
-#
-#
-# class UuevConsumer(UniversallyUniqueVariable):
-#     SUPPORT_BY = (
-#         ('REGION', 'Region'),
-#         ('EXTERSEVER', 'ExternalService'),
-#         ('COMPONENT', 'Component'),
-#     )
-#     support_by = models.CharField(max_length=20, choices=SUPPORT_BY)
-#     supporter_name = models.CharField(max_length=128)
-#     uuev_name = models.CharField(max_length=512)
+import uuid
 
 
 class Service(models.Model):
@@ -63,6 +36,7 @@ class Variable(models.Model):
     )
     type = models.CharField(max_length=50, choices=VALUE_TYPE, default='STRING')
     value = models.CharField(max_length=256, default='')
+
     def __str__(self):
         return "{}".format(self.name)
 
@@ -82,8 +56,41 @@ class Environment(models.Model):
     services = models.ManyToManyField(Service,
                                       through='UseService',
                                       default=None)
+
     def __str__(self):
         return "{}".format(self.name)
+
+
+class PartnerVariable(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    key = models.CharField(max_length=512, blank=False, db_index=True)
+    description = models.CharField(max_length=512, blank=False)
+
+    class Meta:
+        unique_together = (("key", ),)
+
+    def __str__(self):
+        return "{}".format(self.key)
+
+
+class PartnerVariableInEnvironment(models.Model):
+    partner_variable = models.ForeignKey(PartnerVariable,
+                                  related_name="use_this_partner_variable",
+                                  null=False, default=None)
+    in_environment = models.ForeignKey(Environment,
+                                       related_name="partner_variable_in_environment",
+                                       null=False, default=None)
+    is_secret = models.BooleanField(default=False)
+    value = models.CharField(max_length=512, blank=True, null=True, default="")
+    checked = models.BooleanField(default=False)
+
+    def set_secret_value(self, secret_value):
+        aes = AESCipher(self.name)
+        self.value = aes.encrypt(secret_value)
+
+    def get_secret_value(self):
+        aes = AESCipher(self.name)
+        return aes.decrypt(self.value)
 
 
 class UseService(models.Model):

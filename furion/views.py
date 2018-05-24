@@ -8,13 +8,28 @@ from rest_framework.response import Response
 
 from furion.controls import EnvironmentControl
 from furion.models import Environment
+from furion.models import PartnerVariable
+from furion.models import PartnerVariableInEnvironment
 
 from furion.serializers import EnvironmentSerializer
+from furion.serializers import PartnerVariableSerializer
+from furion.serializers import PartnerVariableInEnvironmentSerializer
+
 from django.shortcuts import get_list_or_404
 
+
 class EnvironmentViewSet(viewsets.ModelViewSet):
-    queryset = Environment.objects.all().order_by('name')
+    queryset = Environment.objects.all()
     serializer_class = EnvironmentSerializer
+
+
+class PartnerVariableViewSet(viewsets.ModelViewSet):
+    queryset = PartnerVariable.objects.all()
+    serializer_class = PartnerVariableSerializer
+
+class PartnerVariableInEnvironmentViewSet(viewsets.ModelViewSet):
+    queryset = PartnerVariableInEnvironment.objects.all()
+    serializer_class = PartnerVariableInEnvironmentSerializer
 
 
 @api_view(['GET', 'POST'])

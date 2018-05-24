@@ -4,6 +4,8 @@ from furion.models import Region
 from furion.models import Variable
 from furion.models import Service
 from furion.models import Environment
+from furion.models import PartnerVariable
+from furion.models import PartnerVariableInEnvironment
 
 
 def validate_and_save(serializer):
@@ -31,4 +33,13 @@ class RegionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Region
 
+
+class PartnerVariableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PartnerVariable
+
+
+class PartnerVariableInEnvironmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PartnerVariableInEnvironment
 

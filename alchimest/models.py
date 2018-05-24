@@ -212,3 +212,9 @@ class UniversallyUniqueVariableInComponent(models.Model):
                                    related_name="uuv_in_this_component",
                                    null=False, default=None)
 
+
+class Replica(models.Model):
+    id = models.UUIDField(primary_key=True, auto_created=True, default=uuid.uuid4, editable=False)
+    time = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User)
+    data_file = models.FileField(upload_to='alchimest/', null=True, blank=True, default=None)

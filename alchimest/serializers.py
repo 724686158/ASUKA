@@ -14,6 +14,7 @@ from alchimest.models import GitLikeModel
 from alchimest.models import UniversallyUniqueVariable
 from alchimest.models import UniversallyUniqueVariableInPackage
 from alchimest.models import UniversallyUniqueVariableInComponent
+from alchimest.models import Replica
 
 
 class NamespaceSerializer(serializers.ModelSerializer):
@@ -79,6 +80,11 @@ class UniversallyUniqueVariableInPackageSerializer(serializers.ModelSerializer):
 class UniversallyUniqueVariableInComponentSerializer(serializers.ModelSerializer):
     class Meta:
         model = UniversallyUniqueVariableInComponent
+
+
+class ReplicaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Replica
 
 
 def validate_and_save(serializer):

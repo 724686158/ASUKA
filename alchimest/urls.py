@@ -16,5 +16,7 @@ urlpatterns = [
         views.package_detail),
     url(r'^glm_tree/(?P<type>[a-zA-Z0-9]*)/(?P<name>[a-zA-Z0-9]*)/$', views.glm_tree),
     # url(r'^api/play_count_by_month', views.play_count_by_month, name='play_count_by_month'),
-    url(r'^get_glm_tree_data/(?P<type>[a-zA-Z0-9]*)/(?P<name>[a-zA-Z0-9]*)/$', views.glm_tree_data, name='get_tree_data')
+    url(r'^get_glm_tree_data/(?P<type>[a-zA-Z0-9]*)/(?P<name>[a-zA-Z0-9]*)/$', views.glm_tree_data, name='get_tree_data'),
+    url(r'^dump_data/(?P<id>[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12})/$', views.dump_data),
+    url(r'^load_data/(?P<id>[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12})/$', views.load_data),
 ]

@@ -78,7 +78,7 @@ class LinkView(APIView):
                 package_url = '{}/package_detail/{}/{}/{}/'.format(alchimests[0]['url'], package_namespace,
                                                                      package_name, package_tag)
                 package_res = requests.get(package_url)
-                package_data = package_res.text
+                package_data = json.loads(package_res.text)
                 result_detail['package_data'] = package_data
             else:
                 is_success = False
@@ -110,5 +110,5 @@ class LinkView(APIView):
             'is_success': is_success,
             'result': File(file),
         }
-        HistoryControl.save(history)
+        DeploymentRecordControl.save(history)
         return Response(data=result)

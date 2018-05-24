@@ -6,10 +6,14 @@ from furion.models import Variable
 from furion.models import Service
 from furion.models import Region
 from furion.models import UseService
+from furion.models import PartnerVariable
+from furion.models import PartnerVariableInEnvironment
 from furion.serializers import EnvironmentSerializer
 from furion.serializers import VariableSerializer
 from furion.serializers import ServiceSerializer
 from furion.serializers import RegionSerializer
+from furion.serializers import PartnerVariableSerializer
+from furion.serializers import PartnerVariableInEnvironmentSerializer
 
 
 class Control(object):
@@ -104,10 +108,21 @@ class EnvironmentControl(Control):
                     'service': ServiceControl.release_detail(service),
                     'exclusive': us.exclusive,
                 })
+            partner_variables = PartnerVariableInEnvironment.objects.filter(in_environment=obj)
+            partner_variables_data = []
+            for partner_variable in partner_variables:
+                partner_variables_data.append(PartnerVariableInEnvironmentControl.release_detail(partner_variable))
+            for service in services:
+                us = UseService.objects.filter(service=service, in_environment=obj).first()
+                services_data.append({
+                    'service': ServiceControl.release_detail(service),
+                    'exclusive': us.exclusive,
+                })
             return {
                 'name': obj.name,
                 'region': RegionControl.release_detail(obj.region),
                 'services': services_data,
+                'partner_variables': partner_variables_data,
             }
         else:
             return {}
@@ -163,4 +178,26 @@ class ServiceControl(Control):
             }
         else:
             return {}
+
+
+class PartnerVariableControl(Control):
+    model_name = 'PartnerVariable'
+    model = PartnerVariable
+    serializer = PartnerVariableSerializer
+
+
+class PartnerVariableInEnvironmentControl(Control):
+    model_name = 'PartnerVariable'
+    model = PartnerVariableInEnvironment
+    serializer = PartnerVariableInEnvironmentSerializer
+
+    @classmethod
+    def release_detail(cls, obj):
+        if obj and obj.checked:
+            return {
+                obj.partner_variable.key: obj.value
+            }
+        else:
+            return {}
+
 

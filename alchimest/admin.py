@@ -15,15 +15,19 @@ from alchimest.models import GitLikeModel
 from alchimest.models import UniversallyUniqueVariable
 from alchimest.models import UniversallyUniqueVariableInPackage
 from alchimest.models import UniversallyUniqueVariableInComponent
+from alchimest.models import Replica
 from alchimest.controls import GitLikeModelControl
 from alchimest.controls import ImageControl
 from alchimest.controls import ComponentControl
 from alchimest.controls import PackageControl
 from alchimest.controls import UniversallyUniqueVariableControl
 from alchimest.controls import UniversallyUniqueVariableInPackageControl
+from alchimest.controls import ReplicaControl
+
 from rest_framework.exceptions import ValidationError
 from django.contrib import messages
 
+import os
 
 class EmployeeInline(admin.StackedInline):
     model = Employee
@@ -90,7 +94,7 @@ class GitLikeModelAdmin(admin.ModelAdmin):
 class ImageAdmin(GitLikeModelAdmin):
     model = Image
     control = ImageControl
-    list_display = ('name', 'tag', 'namespace', 'latest', 'glm_tree')
+    list_display = ('namespace', 'name', 'tag', 'latest', 'glm_tree')
 
     def glm_tree(self, obj):
         return "<a href='/alchimest/glm_tree/image/{}'>{}</a>".format(obj.name, 'glm_tree')
@@ -140,7 +144,7 @@ class ComponentAdmin(GitLikeModelAdmin):
     model = Component
     control = ComponentControl
 
-    list_display = ('name', 'tag', 'namespace', 'latest', 'glm_tree')
+    list_display = ('namespace', 'name', 'tag', 'latest', 'glm_tree')
 
     def glm_tree(self, obj):
         return "<a href='/alchimest/glm_tree/component/{}'>{}</a>".format(obj.name, 'glm_tree')
@@ -175,7 +179,7 @@ class PackageAdmin(GitLikeModelAdmin):
     model = Package
     control = PackageControl
 
-    list_display = ('name', 'tag', 'namespace', 'latest', 'approved', 'glm_tree')
+    list_display = ('namespace', 'name', 'tag', 'latest', 'approved', 'glm_tree')
 
     def glm_tree(self, obj):
         return "<a href='/alchimest/glm_tree/package/{}'>{}</a>".format(obj.name, 'glm_tree')
@@ -186,6 +190,37 @@ class PackageAdmin(GitLikeModelAdmin):
 class UniversallyUniqueVariableAdmin(admin.ModelAdmin):
     model = UniversallyUniqueVariable
     control = UniversallyUniqueVariableControl
+
+
+class ReplicaAdmin(admin.ModelAdmin):
+    model = Replica
+    control = ReplicaControl
+    list_display = ('id', 'time', 'user', 'create_replica', 'download_replica_file', 'ues_replica')
+
+    def download_replica_file(self, obj):
+        if obj.data_file and os.path.isfile(".{}".format(obj.data_file.url)):
+            return "<a href='{}' download>Download</a>".format(obj.data_file.url)
+        else:
+            return "Without Replica File"
+    download_replica_file.allow_tags = True
+    download_replica_file.short_description = 'Download'
+
+    def create_replica(self, obj):
+        if obj.data_file and os.path.isfile(".{}".format(obj.data_file.url)):
+            return "Created".format(obj.id)
+        else:
+            return "<a href='/alchimest/dump_data/{}'> Create Replica</a>".format(obj.id)
+    create_replica.allow_tags = True
+    create_replica.short_description = 'Create Replica File'
+
+    def ues_replica(self, obj):
+        if obj.data_file and os.path.isfile(".{}".format(obj.data_file.url)):
+            return "<a href='/alchimest/load_data/{}'>Use Replica</a>".format(obj.id)
+        else:
+            return "Without Replica File"
+
+    ues_replica.allow_tags = True
+    ues_replica.short_description = 'USE REPLICA'
 
 #
 # class UniversallyUniqueVariableInPackageAdmin(admin.ModelAdmin):
@@ -200,3 +235,4 @@ admin.site.register(Image, ImageAdmin)
 admin.site.register(Component, ComponentAdmin)
 admin.site.register(Package, PackageAdmin)
 admin.site.register(UniversallyUniqueVariable, UniversallyUniqueVariableAdmin)
+admin.site.register(Replica, ReplicaAdmin)

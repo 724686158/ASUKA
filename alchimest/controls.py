@@ -4,6 +4,8 @@ from alchimest.serializers import validate_and_save
 from alchimest.utils import copy_model_instance
 from alchimest.models import *
 from alchimest.serializers import *
+import os
+from django.core.files import File
 
 
 class Control(object):
@@ -146,6 +148,7 @@ class GitLikeModelControl(Control):
                     "children": cls.get_son_objs_data(son_obj)
                 })
         return data
+
 
 class ImageControl(GitLikeModelControl):
     model_name = 'Image'
@@ -357,10 +360,29 @@ class UniversallyUniqueVariableControl(Control):
 class UniversallyUniqueVariableInPackageControl(Control):
     model_name = 'UniversallyUniqueVariableInPackage'
     model = UniversallyUniqueVariableInPackage
-    serializer = UniversallyUniqueVariableInPackage
+    serializer = UniversallyUniqueVariableInPackageSerializer
 
 
 class UniversallyUniqueVariableInComponentControl(Control):
     model_name = 'UniversallyUniqueVariableInComponent'
     model = UniversallyUniqueVariableInComponent
-    serializer = UniversallyUniqueVariableInComponent
+    serializer = UniversallyUniqueVariableInComponentSerializer
+
+
+class ReplicaControl(Control):
+    model_name = 'Replica'
+    model = Replica
+    serializer = ReplicaSerializer
+
+    @classmethod
+    def dump_data(cls, obj):
+        filename = "media/alchimest/{}.json".format(obj.id)
+        os.system('python manage.py dumpdata alchimest > {}'.format(filename))
+        data_file = open(filename)
+        obj.data_file = File(data_file)
+        obj.save()
+
+    @classmethod
+    def load_data(cls, obj):
+        filename = "media/alchimest/{}.json".format(obj.id)
+        os.system('python manage.py loaddata {}'.format(filename))
