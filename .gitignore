@@ -4,3 +4,4 @@ pem/
 .coverage
 migrations
 media/
+db.sqlite3
