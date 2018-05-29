@@ -3,5 +3,5 @@
 pem/
 .coverage
 migrations
-media/
-db.sqlite3
+media/alchimest/*
+media/coil/*
