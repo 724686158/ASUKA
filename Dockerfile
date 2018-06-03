@@ -1,4 +1,4 @@
-FROM  ubuntu:16.04
+FROM  django:latest
 
 WORKDIR /ASUKA
 
@@ -8,5 +8,7 @@ COPY . /ASUKA
 
 COPY requirements.txt /
 RUN pip install  --no-cache-dir  -r /requirements.txt
+
+RUN chmod a+x /ASUKA/run.sh
 
 CMD ["/ASUKA/run.sh"]
