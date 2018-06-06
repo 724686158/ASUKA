@@ -12,8 +12,3 @@ urlpatterns = [
     url(r'^link_test/(?P<environment_name>[a-zA-Z0-9_]*)/(?P<package_namespace>[a-zA-Z0-9_]*)/(?P<package_name>[a-zA-Z0-9_]*)/(?P<package_tag>[a-zA-Z0-9_]*)/$', views.LinkView.as_view()),
     # url(r'^link/', ),
 ]
-#
-# if settings.DEBUG:
-#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-#     # urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_URL)
-#

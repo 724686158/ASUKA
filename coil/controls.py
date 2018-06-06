@@ -9,6 +9,7 @@ import json
 import os
 
 
+
 class Control(object):
     model_name = None
     model = None
@@ -171,11 +172,14 @@ class DeploymentRecordControl(Control):
             env_uuv_keys = filter(lambda x: x['value_origin'] == "ENVIRONMENT", package_data.get('uuvs'))
             partner_variable_url = "{}/partner_variable/".format(furions[0]['url'])
             for env_uuv_key in env_uuv_keys:
-                data = {
+                data = json.dumps({
                     "key": env_uuv_key['key'],
                     "description": env_uuv_key['description'],
+                })
+                headers = {
+                    'Content-Type': 'application/json'
                 }
-                requests.post(url=partner_variable_url, data=data)
+                requests.post(url=partner_variable_url, headers=headers, data=data)
             partner_variable_in_environment_url = "{}/partner_variable_in_environment/".format(furions[0]['url'])
             all_pvs = json.loads(requests.get(url=partner_variable_in_environment_url).text)
             partner_variable_in_this_environment = filter(lambda x: x.get('in_environment') == environment_name, all_pvs)
@@ -196,14 +200,17 @@ class DeploymentRecordControl(Control):
                 error_detail['partner_variable_in_environment_error'] = \
                     "some partner variable in {} was created and need check".format(environment_name)
                 for pvi in wait_crate:
-                    data = {
+                    data = json.dumps({
                         "is_secret": False,
                         "value": "",
                         "checked": False,
                         "partner_variable": pvi,
                         "in_environment": environment_name
+                    })
+                    headers = {
+                        'Content-Type': 'application/json'
                     }
-                    requests.post(partner_variable_in_environment_url, data)
+                    requests.post(url=partner_variable_in_environment_url, headers=headers, data=data)
 
         # create file and save deployment_record object
         if is_success:
@@ -212,7 +219,7 @@ class DeploymentRecordControl(Control):
                 'detail': result_detail,
             }
             json_data = json.dumps(result)
-            os.system("echo '{}' > {}".format(json_data, result_file_name))
+            os.system('echo "{}" > {}'.format(json_data, result_file_name))
         else:
             result = {
                 'is_success': is_success,
@@ -225,7 +232,7 @@ class DeploymentRecordControl(Control):
                 # 'all_pvs': all_pvs,
             }
             json_data = json.dumps(result)
-            os.system("echo '{}' > {}".format(json_data, result_file_name))
+            os.system('echo "{}" > {}'.format(json_data, result_file_name))
         result_file = open('{}'.format(result_file_name))
         obj.is_success = is_success
         obj.result = File(result_file)

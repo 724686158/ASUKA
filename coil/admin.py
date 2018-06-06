@@ -21,12 +21,20 @@ class FurionHookAdmin(admin.ModelAdmin):
 class DeploymentRecordAdmin(admin.ModelAdmin):
     model = DeploymentRecord
     control = DeploymentRecordControl
-    list_display = ('environment_name', 'package_namespace', 'package_name', 'package_tag', 'is_success', 'download_result', 'time')
+    list_display = ('environment_name', 'package_namespace', 'package_name', 'package_tag', 'test_delpoy', 'is_success', 'download_result', 'time')
+
+    def test_delpoy(self, obj):
+        return "<a href='/coil/link_test/{}/{}/{}/{}'>{}</a>".format(obj.environment_name,
+                                                                     obj.package_namespace,
+                                                                     obj.package_name,
+                                                                     obj.package_tag,
+                                                                     'TEST_DEPLOY')
+    test_delpoy.allow_tags = True
+    test_delpoy.short_description = 'TEST_DEPLOY'
 
     def download_result(self, obj):
-        if os.path.isfile(".{}".format(obj.result.url)):
+        if obj.result and os.path.isfile(".{}".format(obj.result.url)):
             if obj.is_success:
-
                 return "<a href='{}' download>Download Result</a>".format(obj.result.url)
             else:
                 return "<a href='{}'>Error Detail</a>".format(obj.result.url)
@@ -36,8 +44,6 @@ class DeploymentRecordAdmin(admin.ModelAdmin):
     download_result.allow_tags = True
     download_result.short_description = 'Download Result'
 
-    def save_model(self, request, obj, form, change):
-        self.control.create_deployment_record_and_get_result(obj)
 
 
 admin.site.register(AlchimestHook, AlchimestHookAdmin)

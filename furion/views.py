@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework import status
@@ -18,6 +17,7 @@ from furion.serializers import PartnerVariableInEnvironmentSerializer
 from django.shortcuts import get_list_or_404
 
 
+@permission_classes((permissions.AllowAny,))
 class EnvironmentViewSet(viewsets.ModelViewSet):
     queryset = Environment.objects.all()
     serializer_class = EnvironmentSerializer
